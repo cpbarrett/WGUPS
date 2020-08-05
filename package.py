@@ -6,7 +6,7 @@ class Package:
 
     def __init__(self, pkg_id, address, zip_code, deadline, weight, special_notes):
         self.pkg_id = int(pkg_id)
-        self.address = address
+        self.address = self.make_delivery_address(address)
         self.city = "Salt Lake City"
         self.state = "UT"
         self.zip_code = zip_code
@@ -27,3 +27,8 @@ class Package:
         hour = float(time[0])
         minute = float(time[1][0:2]) / 60
         return hour + minute + am_pm
+
+    def make_delivery_address(self, address):
+        address.replace('North', 'N')
+        address.replace('South', 'S')
+        return address

@@ -9,4 +9,6 @@ class Location:
         self.state = state
         self.zip_code = zip_code
         self.label = label
+        self.distance = 140
+        self.prev_point = None
 

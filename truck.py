@@ -5,15 +5,14 @@ class Truck:
     """Trucks have id numbers, travel at 18mph, and carry 16 packages."""
     def __init__(self, truck_id):
         self.truck_id = truck_id
-        self.speed = 18
+        self.speed = 18.0
         self.capacity = 16
-        self.cargo = []
+        self.cargo = {}
 
-    def load_package(self, pkg):
+    def load_package(self, pkg_id, delivery_location):
         """If truck is not full, add a package and set it as 'In Route'."""
         if self.not_full():
-            pkg.delivery_status = "In Route"
-            self.cargo.append(pkg)
+            self.cargo[delivery_location] = pkg_id
 
     def deliver_package(self):
         """Remove a package from the truck and set it as 'Delivered'."""

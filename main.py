@@ -12,10 +12,12 @@ def print_menu():
 
 
 if __name__ == "__main__":
-    hub = Hub()
-    hub.load_up_truck(hub.trucks[0])
-    hub.route_truck(hub.trucks[0])
-    # print_menu()
+    hub = Hub(2)
+    hub.load_all(hub.trucks[0])
+    # hub.load_truck_2(hub.trucks[1])
+    print(hub.truck_mileage(hub.trucks[0]))
+    # print(hub.truck_mileage(hub.trucks[1]))
+    print_menu()
     # while True:
     #     try:
     #         command = int(input("Command: "))
