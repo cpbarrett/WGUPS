@@ -1,28 +1,40 @@
+"""
+The Hub class loads all the data from the csv files, creates the package hash table,
+ and creates the graph containing all the delivery locations.
+"""
 import csv
 
-from distance_table import DistanceTable
+import distance_table
 from location import Location
 from hash_table import HashTable
 from truck import Truck
 
 
 class Hub:
+    """
+    Class constructor takes in the number of trucks and an optional opening time.
+    The hub location is also created for use elsewhere.
+    """
+
     def __init__(self, truck_count=1, opening_time="08:00 AM"):
         print("Welcome to Hub Management Center")
         self.opening_time = opening_time
         self.truck_count = truck_count
         self.trucks = []
         self.add_truck(truck_count)
-        self.center = Location(
-                    "Western Governors University",
-                    "4001 South 700 East", "Salt Lake City",
-                    "UT", "84107", "HUB")
-        self.destinations = DistanceTable()
+        self.center = Location("Western Governors University", "4001 South 700 East",
+                               "Salt Lake City", "UT", "84107", "HUB")
+        self.destinations = distance_table.DistanceTable()
         self.database = HashTable()
         self.load_locations()
         self.load_packages()
 
     def truck_mileage(self, truck):
+        """
+
+        :param truck:
+        :return:
+        """
         stops = self.route_truck(truck)
         miles = 0.0
         route = []
@@ -39,39 +51,57 @@ class Hub:
         return miles, route
 
     def add_truck(self, count=1):
+        """
+
+        :param count:
+        :return:
+        """
         while count > 0:
             new_truck = Truck(count)
             self.trucks.append(new_truck)
             count -= 1
 
     def load_all(self, truck):
+        """
+
+        :param truck:
+        :return:
+        """
         truck.capacity = len(self.database.table)
         for pkg in self.database.table:
             if truck.not_full() is False:
                 break
-            elif pkg.delivery_status != "At Hub":
+            if pkg.delivery_status != "At Hub":
                 continue
-            else:
-                pkg.delivery_status = "In Route"
-                truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address))
+            pkg.delivery_status = "In Route"
+            truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address))
 
     def load_up_truck(self, truck):
+        """
+
+        :param truck:
+        :return:
+        """
         for pkg in self.database.table:
             if truck.not_full() is False:
                 break
-            elif pkg.delivery_status != "At Hub":
+            if pkg.delivery_status != "At Hub":
                 continue
-            elif pkg.special_notes == '':
-                pkg.delivery_status = "In Route"
-                truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address))
+            pkg.delivery_status = "In Route"
+            truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address))
 
     def load_truck_2(self, truck):
+        """
+
+        :param truck:
+        :return:
+        """
         for pkg in self.database.table:
             if truck.not_full() is False:
                 break
-            elif pkg.delivery_status != "At Hub":
+            if pkg.delivery_status != "At Hub":
                 continue
-            elif pkg.special_notes.endswith('Must', 0, 4) or pkg.special_notes.endswith('truck 2'):
+            if pkg.special_notes.endswith('Must', 0, 4) or pkg.special_notes.endswith('truck 2'):
                 pkg.delivery_status = "In Route"
                 truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address))
                 continue
@@ -80,6 +110,10 @@ class Hub:
                 truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address))
 
     def load_packages(self):
+        """
+
+        :return:
+        """
         with open('WGUPS_Package_File.csv') as csv_file:
             csv_reader = csv.reader(csv_file)
             line_count = 0
@@ -89,6 +123,11 @@ class Hub:
                 line_count += 1
 
     def load_distances(self, distances):
+        """
+
+        :param distances:
+        :return:
+        """
         points = list(self.destinations.points.keys())
         for i in distances:
             for j in range(0, len(points) - 1):
@@ -100,6 +139,10 @@ class Hub:
                 self.destinations.add_distance(point_a, point_b, distance)
 
     def load_locations(self):
+        """
+
+        :return:
+        """
         with open('WGUPS_Distance_Table.csv') as csv_file:
             csv_reader = csv.reader(csv_file)
             line_count = 0
@@ -122,23 +165,23 @@ class Hub:
             self.load_distances(distances)
 
     def route_truck(self, truck):
+        """
+
+        :param truck:
+        :return:
+        """
         stops = [self.center]
         stops += list(truck.cargo.keys())
         self.dijkstra_shortest_path(self.center, stops)
         return stops
 
-    def get_shortest_path(self, start_point, end_point):
-        # Start from end_vertex and build the path backwards.
-        path = ''
-        current_point = end_point
-        while current_point is not start_point:
-            if isinstance(current_point, Location):
-                path = ' -> ' + str(current_point.label) + path
-                current_point = current_point.prev_point
-        path = start_point.label + path
-        return path
-
     def dijkstra_shortest_path(self, start_point, stops):
+        """
+
+        :param start_point:
+        :param stops:
+        :return:
+        """
         # Put all points in an unvisited queue.
         unvisited_queue = []
         for current_point in stops:

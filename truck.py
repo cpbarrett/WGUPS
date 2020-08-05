@@ -14,11 +14,6 @@ class Truck:
         if self.not_full():
             self.cargo[delivery_location] = pkg_id
 
-    def deliver_package(self):
-        """Remove a package from the truck and set it as 'Delivered'."""
-        pkg = self.cargo.pop()
-        pkg.delivery_status = "Delivered"
-
     def not_full(self):
         """Return False if the truck cannot carry anymore packages."""
         if len(self.cargo) < self.capacity:
