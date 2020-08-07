@@ -5,13 +5,11 @@ The location class represents a vertex point in the distance_table (graph).
 
 class Location:
     """
-    Each location object has name, label, city, state, zip_code, and label
+    Each location object has a name, address, zip_code, and label
     """
-    def __init__(self, name, address, city, state, zip_code, label):
+    def __init__(self, name: str, address: str, zip_code: str, label: str):
         self.name = name
-        self.address = address
-        self.city = city
-        self.state = state
+        self.address = address + " Salt Lake City, UT"
         self.zip_code = zip_code
         self.label = Location.convert_delivery_label(label)
         self.distance = 140

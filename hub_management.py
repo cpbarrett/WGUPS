@@ -13,7 +13,7 @@ from truck import Truck
 class Hub:
     """
     Class constructor takes in the number of trucks and an optional opening time.
-    The hub location is also created for use elsewhere.
+    The hub location is created manually for use elsewhere.
     """
 
     def __init__(self, truck_count=1, opening_time="08:00 AM"):
@@ -22,8 +22,7 @@ class Hub:
         self.truck_count = truck_count
         self.trucks = []
         self.add_truck(truck_count)
-        self.center = Location("Western Governors University", "4001 South 700 East",
-                               "Salt Lake City", "UT", "84107", "HUB")
+        self.center = Location("Western Governors University", "4001 South 700 E", "84107", "HUB")
         self.destinations = distance_table.DistanceTable()
         self.database = HashTable()
         self.load_locations()
@@ -32,8 +31,8 @@ class Hub:
     def truck_mileage(self, truck):
         """
 
-        :param truck:
-        :return:
+        :param truck:Truck
+        :return:int, List[Location]
         """
         stops = self.route_truck(truck)
         miles = 0.0
@@ -53,8 +52,8 @@ class Hub:
     def add_truck(self, count=1):
         """
 
-        :param count:
-        :return:
+        :param count:int
+        :return:Noe
         """
         while count > 0:
             new_truck = Truck(count)
@@ -64,8 +63,8 @@ class Hub:
     def load_all(self, truck):
         """
 
-        :param truck:
-        :return:
+        :param truck:Truck
+        :return:None
         """
         truck.capacity = len(self.database.table)
         for pkg in self.database.table:
@@ -79,8 +78,8 @@ class Hub:
     def load_up_truck(self, truck):
         """
 
-        :param truck:
-        :return:
+        :param truck:Truck
+        :return:None
         """
         for pkg in self.database.table:
             if truck.not_full() is False:
@@ -93,8 +92,8 @@ class Hub:
     def load_truck_2(self, truck):
         """
 
-        :param truck:
-        :return:
+        :param truck:Truck
+        :return:None
         """
         for pkg in self.database.table:
             if truck.not_full() is False:
@@ -112,7 +111,7 @@ class Hub:
     def load_packages(self):
         """
 
-        :return:
+        :return:None
         """
         with open('WGUPS_Package_File.csv') as csv_file:
             csv_reader = csv.reader(csv_file)
@@ -125,8 +124,8 @@ class Hub:
     def load_distances(self, distances):
         """
 
-        :param distances:
-        :return:
+        :param distances:List[[str, str]]
+        :return:None
         """
         points = list(self.destinations.points.keys())
         for i in distances:
@@ -140,8 +139,8 @@ class Hub:
 
     def load_locations(self):
         """
-
-        :return:
+        Reads in the string data from the csv file loads each location as a point on a graph class
+        :return:None
         """
         with open('WGUPS_Distance_Table.csv') as csv_file:
             csv_reader = csv.reader(csv_file)
@@ -159,7 +158,7 @@ class Hub:
                 label = row[1].split("\n")
                 zip_code = label[1].strip("(").strip(")")
                 location = Location(
-                    address[0], address[1], "Salt Lake City", "UT", zip_code, label[0].strip(" "))
+                    address[0], address[1], zip_code, label[0].strip(" "))
                 self.destinations.add_location(location)
                 distances.append(row[2:-1])
             self.load_distances(distances)
@@ -167,8 +166,8 @@ class Hub:
     def route_truck(self, truck):
         """
 
-        :param truck:
-        :return:
+        :param truck:Truck
+        :return:List[Location]
         """
         stops = [self.center]
         stops += list(truck.cargo.keys())
@@ -178,9 +177,9 @@ class Hub:
     def dijkstra_shortest_path(self, start_point, stops):
         """
 
-        :param start_point:
-        :param stops:
-        :return:
+        :param start_point:Location
+        :param stops:List[Location]
+        :return:None
         """
         # Put all points in an unvisited queue.
         unvisited_queue = []

@@ -27,15 +27,15 @@ class HashTable:
     def hash(self, pkg_id):
         """
         calculate the table index for a specific pkg_id
-        :param pkg_id:
-        :return:
+        :param pkg_id: int
+        :return: int
         """
         return hash(pkg_id) % 31
 
     def resize(self):
         """
         If the table is more than 70% full, expand the table size.
-        :return:
+        :return: None
         """
         size = len(self.table)
         load_factor = self.element_count / size
@@ -47,8 +47,8 @@ class HashTable:
     def look_up(self, pkg_id):
         """
         Gets package with matching pkg_id. Returns None if there is no matching package.
-        :param pkg_id:
-        :return:
+        :param pkg_id: int
+        :return: Package
         """
         index = self.hash(pkg_id)
         return self.table[index]
@@ -64,7 +64,7 @@ class HashTable:
         :param special_notes: str
         :return: None
         """
-        # pkg_id, label, zip_code, deadline, weight, special_notes, delivery status
+        # pkg_id, label, zip_code, dl, wt, notes, delivery status
         new_pkg = Package(pkg_id, address, zip_code, deadline, weight, special_notes)
         index = self.hash(new_pkg.pkg_id)
         self.table[index] = new_pkg
@@ -74,8 +74,8 @@ class HashTable:
     def update(self, package):
         """
         Update a package if it exists in the table
-        :param package:
-        :return:
+        :param package: Package
+        :return: None
         """
         if self.look_up(package.pkg_id) == package.pkg_id:
             index = self.hash(package.pkg_id)
