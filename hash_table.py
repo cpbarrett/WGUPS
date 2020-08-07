@@ -4,17 +4,24 @@ HashTable to manage storage of all packages and their information
 from package import Package
 
 
+# noinspection PyMethodMayBeStatic
 class HashTable:
     """
-    Hashtable class definition using quadratic probing
+    The Hashtable class has Big-O is as follows:
+    Init: O(N)
+    Resize: O(n)
+    Lookup: O(1)
+    Insert: O(1)
+    Update: O(1)
+    Remove: O(1)
     """
 
     def __init__(self, table_size=41):
         """
         table is initialized with empty values and small initial capacity
         """
-        dummy_pkg = Package(0, "", "", "EOD", 0, "")
-        self.table = [dummy_pkg] * table_size
+        self.dummy_pkg = Package(0, "", "", "EOD", 0, "")
+        self.table = [self.dummy_pkg] * table_size
         self.element_count = 0
 
     def hash(self, pkg_id):
@@ -49,18 +56,18 @@ class HashTable:
     def insert(self, pkg_id, address, zip_code, deadline, weight, special_notes):
         """
         Creates a pkg object based on given information and inserts it into the table using pkg_id.
-        :param pkg_id:
-        :param address:
-        :param zip_code:
-        :param deadline:
-        :param weight:
-        :param special_notes:
-        :return:
+        :param pkg_id: int
+        :param address: str
+        :param zip_code: int
+        :param deadline: str
+        :param weight: int
+        :param special_notes: str
+        :return: None
         """
         # pkg_id, label, zip_code, deadline, weight, special_notes, delivery status
         new_pkg = Package(pkg_id, address, zip_code, deadline, weight, special_notes)
         index = self.hash(new_pkg.pkg_id)
-        self.table.insert(index, new_pkg)
+        self.table[index] = new_pkg
         self.element_count += 1
         self.resize()
 
@@ -70,16 +77,15 @@ class HashTable:
         :param package:
         :return:
         """
-        if self.look_up(package.pkg_id) is not None:
+        if self.look_up(package.pkg_id) == package.pkg_id:
             index = self.hash(package.pkg_id)
-            self.table.insert(index, package)
+            self.table[index] = package
 
     def remove(self, pkg_id):
         """
-        Removes an item with matching key and returns the item if removed.
-        :param pkg_id:
-        :return:
+        Removes an item with matching pkg_id.
+        :param pkg_id: int
+        :return: None
         """
-        if self.look_up(pkg_id) is not None:
-            index = self.hash(pkg_id)
-            return self.table.pop(index)
+        index = self.hash(pkg_id)
+        self.table[index] = self.dummy_pkg
