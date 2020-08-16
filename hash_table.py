@@ -33,20 +33,19 @@ class HashTable:
             return None
         return self.table[index]
 
-    def insert(self, pkg_id: int, address: str, zip_code: str, deadline: str, weight: int, special_notes: str):
+    def insert(self, pkg_id: int, address: str, zip_code: str, dl: str, wt: int, notes: str):
         """
         Creates a pkg object based on given information and inserts it into the table using pkg_id.
-        :param pkg_id: int
-        :param address: str
-        :param zip_code: int
-        :param deadline: str
-        :param weight: int
-        :param special_notes: str
+        :param pkg_id: id of the pkg
+        :param address: pkg delivery address
+        :param zip_code: zip code for pkg
+        :param dl: delivery deadline for pkg
+        :param wt: pkg weight
+        :param notes: misc. delivery instructions
         :return: None
         """
-        # pkg_id, label, zip_code, dl, wt, notes, delivery status
         index = int(pkg_id)
-        new_pkg = Package(pkg_id, address, zip_code, deadline, weight, special_notes)
+        new_pkg = Package(pkg_id, address, zip_code, dl, wt, notes)
         self.table[index] = new_pkg
 
     def update(self, package):

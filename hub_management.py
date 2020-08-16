@@ -29,27 +29,6 @@ class Hub:
         self.load_locations()
         self.load_packages()
 
-    def truck_mileage(self, truck):
-        """
-
-        :param truck:Truck
-        :return:int, List[Location]
-        """
-        stops = self.route_truck(truck)
-        miles = 0.0
-        route = []
-        for i in truck.cargo.values():
-            if isinstance(i, Location) is False:
-                continue
-            pkg = self.database.look_up(i)
-            pkg.delivery_status = "Delivered"
-        for stop in stops:
-            if isinstance(stop, Location) is False:
-                continue
-            miles += stop.distance
-            route.append(stop.label)
-        return miles, route
-
     def add_truck(self, count):
         """
         Adds a number of new trucks to Hub according to the given count
@@ -136,7 +115,7 @@ class Hub:
                 distances.append(row[2:-1])
             self.load_distances(distances)
 
-    def find_a_way(self, truck):
+    def find_a_way(self, truck: Truck):
         """
         finds the shortest route along the stops from truck in O(N) time
         :param truck: truck with stops to make
@@ -153,12 +132,13 @@ class Hub:
             the_way.append(result[0])
             current = stops.pop(0)
             packages = truck.unload_package(current)
-            delivery_time = Package.calculate_delivery_time(distance, truck.speed, self.current_time)
-            for ID in packages:
-                pkg = self.database.look_up(ID)
-                pkg.delivery_status = "Delivered at " + delivery_time
+            delivery_time = Package.get_delivery_time(distance, truck.speed, self.current_time)
+            for pkg_id in packages:
+                pkg = self.database.look_up(pkg_id)
+                pkg.delivery_status = "Delivered"
+                pkg.delivery_time = delivery_time
         distance += self.destinations.get_distance(the_way[-1], self.center)  # return to the Hub
-        truck.depart_at = Package.calculate_delivery_time(distance, truck.speed, self.current_time)
+        truck.depart_at = Package.get_delivery_time(distance, truck.speed, self.current_time)
         return the_way, distance
 
     def nearest_neighbor(self, stops: [Location], current: Location):
@@ -178,7 +158,54 @@ class Hub:
                 val = dist
         return neighbor, val
 
+    def get_deliveries(self, current_time="11:59 PM"):
+        """
+        Returns a list of all delivered packages.
+        :param current_time: what time is it
+        :return: None
+        """
+        deliveries = []
+        for pkg in self.database.table:
+            if pkg.delivery_status.__contains__("Delivered"):
+                if pkg.calculate_deadline(current_time) >= pkg.calculate_deadline(pkg.delivery_time):
+                    deliveries.append(pkg)
+        return deliveries
+
+    def get_miles(self):
+        """
+        Returns the mileage, departure time, and return time for all hub trucks.
+        :return: info, miles
+        """
+        miles = []
+        info = []
+        for truck in self.trucks:
+            departure_time = f'Truck {truck.truck_id}:\n'
+            departure_time += f'Departs from {self.center.label} at {truck.depart_at}.'
+            result = self.find_a_way(truck)
+            mileage = f'Travels {result[1].__round__(2)} miles.'
+            return_time = f'Returns to {self.center.label} by {truck.depart_at}.'
+            miles.append(result[1])
+            info.append([departure_time, mileage, return_time])
+        return info, miles
+
     # the following functions are only for testing purposes and not used in the main program
+    def truck_mileage(self, truck: Truck):
+        """
+        :param truck:Truck
+        :return:int, List[Location]
+        """
+        stops = self.route_truck(truck)
+        miles = 0.0
+        route = []
+        for packages in truck.cargo.values():
+            for pkg_id in packages:
+                pkg = self.database.look_up(pkg_id)
+                pkg.delivery_status = "Delivered"
+        for stop in stops:
+            miles += stop.distance
+            route.append(stop.label)
+        return miles, route
+
     def load_all(self, truck):
         """
         test function that loads all of the packages onto 1 truck

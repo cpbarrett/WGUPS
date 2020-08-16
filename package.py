@@ -28,6 +28,7 @@ class Package:
         self.weight = wt
         self.special_notes = notes
         self.delivery_status = "At Hub"
+        self.delivery_time = "24:00 AM"
 
     @staticmethod
     def calculate_deadline(deadline: str) -> float:
@@ -60,7 +61,7 @@ class Package:
         return address
 
     @staticmethod
-    def calculate_delivery_time(miles: float, avg_speed: float, departure_time: str) -> str:
+    def get_delivery_time(miles: float, avg_speed: float, departure_time: str) -> str:
         """
         Calculate delivery time based on average speed and mileage.
         :param miles: current miles traveled from HUB
@@ -102,4 +103,4 @@ class Package:
                    f' Delivery Address={self.address} '
                    f' Deadline={self.deadline} '
                    f' Weight={self.weight} '
-                   f' {self.delivery_status}')
+                   f' {self.delivery_status} at {self.delivery_time}')
