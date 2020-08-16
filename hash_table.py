@@ -9,7 +9,6 @@ class HashTable:
     """
     The Hashtable class has Big-O is as follows:
     Init: O(N)
-    Resize: O(n)
     Lookup: O(1)
     Insert: O(1)
     Update: O(1)
@@ -22,38 +21,19 @@ class HashTable:
         """
         self.dummy_pkg = Package(0, "", "", "EOD", 0, "")
         self.table = [self.dummy_pkg] * table_size
-        self.element_count = 0
 
-    def hash(self, pkg_id):
-        """
-        calculate the table index for a specific pkg_id
-        :param pkg_id: int
-        :return: int
-        """
-        return hash(pkg_id) % 31
-
-    def resize(self):
-        """
-        If the table is more than 70% full, expand the table size.
-        :return: None
-        """
-        size = len(self.table)
-        load_factor = self.element_count / size
-        if load_factor >= 0.7:
-            dummy_pkg = Package(0, "", "", "EOD", 0, "")
-            extension = [dummy_pkg] * size
-            self.table.extend(extension)
-
-    def look_up(self, pkg_id):
+    def look_up(self, pkg_id: int):
         """
         Gets package with matching pkg_id. Returns None if there is no matching package.
         :param pkg_id: int
         :return: Package
         """
-        index = self.hash(pkg_id)
+        index = int(pkg_id)
+        if self.table[index] is None:
+            return None
         return self.table[index]
 
-    def insert(self, pkg_id, address, zip_code, deadline, weight, special_notes):
+    def insert(self, pkg_id: int, address: str, zip_code: str, deadline: str, weight: int, special_notes: str):
         """
         Creates a pkg object based on given information and inserts it into the table using pkg_id.
         :param pkg_id: int
@@ -65,11 +45,9 @@ class HashTable:
         :return: None
         """
         # pkg_id, label, zip_code, dl, wt, notes, delivery status
+        index = int(pkg_id)
         new_pkg = Package(pkg_id, address, zip_code, deadline, weight, special_notes)
-        index = self.hash(new_pkg.pkg_id)
         self.table[index] = new_pkg
-        self.element_count += 1
-        self.resize()
 
     def update(self, package):
         """
@@ -78,7 +56,7 @@ class HashTable:
         :return: None
         """
         if self.look_up(package.pkg_id) == package.pkg_id:
-            index = self.hash(package.pkg_id)
+            index = int(package.pkg_id)
             self.table[index] = package
 
     def remove(self, pkg_id):
@@ -87,5 +65,5 @@ class HashTable:
         :param pkg_id: int
         :return: None
         """
-        index = self.hash(pkg_id)
+        index = int(pkg_id)
         self.table[index] = self.dummy_pkg

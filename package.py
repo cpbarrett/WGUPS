@@ -1,10 +1,13 @@
 """
-Package Class that acts as a vertex for the graph class, DistanceTable
+Package class holds all the information for a package
 """
 
 
 class Package:
-    """Package class holds all the information for a package"""
+    """
+    Packages have id numbers, a delivery address and zip code, a deadline, weight,
+    and special notes for delivery instructions
+    """
 
     def __init__(self, pkg_id: int, address: str, zip_code: str, dl: str, wt: int, notes: str):
         """
@@ -17,11 +20,11 @@ class Package:
         """
 
         self.pkg_id = pkg_id
-        self.address = Package.convert_delivery_address(address)
+        self.address = self.convert_delivery_address(address)
         self.city = "Salt Lake City"
         self.state = "UT"
         self.zip_code = zip_code
-        self.deadline = Package.calculate_deadline(dl)
+        self.deadline = dl
         self.weight = wt
         self.special_notes = notes
         self.delivery_status = "At Hub"
@@ -44,14 +47,59 @@ class Package:
         return hour + minute + am_pm
 
     @staticmethod
-    def convert_delivery_address(address: str):
+    def convert_delivery_address(address: str) -> str:
         """
         Makes the delivery address more consistent with Location labels
         :param address: containing North, South, East, West
         :return: address string with abbreviated cardinal directions
         """
-        address.replace('North', 'N')
-        address.replace('South', 'S')
-        address.replace('East', 'E')
-        address.replace('West', 'W')
+        address = address.replace('North', 'N')
+        address = address.replace('South', 'S')
+        address = address.replace('East', 'E')
+        address = address.replace('West', 'W')
         return address
+
+    @staticmethod
+    def calculate_delivery_time(miles: float, avg_speed: float, departure_time: str) -> str:
+        """
+        Calculate delivery time based on average speed and mileage.
+        :param miles: current miles traveled from HUB
+        :param avg_speed: avg_speed of the truck
+        :param departure_time: the time the truck leaves the Hub
+        :return: str representation of the dl time in 12 hr time
+        """
+        start_time = Package.calculate_deadline(departure_time)
+        delivery_time = miles / avg_speed
+        delivery_time += start_time
+        hour = int(delivery_time)
+        minute = int(60 * (delivery_time - hour))
+        am_pm = " AM"
+        if hour > 12:
+            hour -= 12
+            am_pm = " PM"
+        if minute < 10:
+            minute = "0" + str(minute)
+        time = str(hour) + ":" + str(minute) + am_pm
+        return time
+
+    def correct_info(self, address: str = "", zip_code: str = "", notes: str = ""):
+        """
+        change the address, zip code, or special notes for this package
+        :param address: corrected address
+        :param zip_code: corrected zip code
+        :param notes: updated special notes
+        :return: None
+        """
+        if address != "":
+            self.address = self.convert_delivery_address(address)
+        if zip_code != "":
+            self.zip_code = zip_code
+        if notes != "":
+            self.special_notes += "---" + notes
+
+    def __str__(self) -> str:
+        return str(f'PkgID={self.pkg_id} '
+                   f' Delivery Address={self.address} '
+                   f' Deadline={self.deadline} '
+                   f' Weight={self.weight} '
+                   f' {self.delivery_status}')

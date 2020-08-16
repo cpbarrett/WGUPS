@@ -11,19 +11,19 @@ class Location:
         self.name = name
         self.address = address + " Salt Lake City, UT"
         self.zip_code = zip_code
-        self.label = Location.convert_delivery_label(label)
+        self.label = self.convert_delivery_label(label)
         self.distance = 140
         self.prev_point = None
 
     @staticmethod
-    def convert_delivery_label(label):
+    def convert_delivery_label(label: str) -> str:
         """
         Makes the label data more consistent with packages
         :param label: the label to be shortened
         :return: label with abbreviated cardinal directions
         """
-        label.replace('North', 'N')
-        label.replace('South', 'S')
-        label.replace('East', 'E')
-        label.replace('West', 'W')
+        label = label.replace('North', 'N')
+        label = label.replace('South', 'S')
+        label = label.replace('East', 'E')
+        label = label.replace('West', 'W')
         return label

@@ -7,6 +7,7 @@ import csv
 import distance_table
 from location import Location
 from hash_table import HashTable
+from package import Package
 from truck import Truck
 
 
@@ -16,9 +17,9 @@ class Hub:
     The hub location is created manually for use elsewhere.
     """
 
-    def __init__(self, truck_count=1, opening_time="08:00 AM"):
+    def __init__(self, truck_count=2, opening_time="08:00 AM"):
         print("Welcome to Hub Management Center")
-        self.opening_time = opening_time
+        self.current_time = opening_time
         self.truck_count = truck_count
         self.trucks = []
         self.add_truck(truck_count)
@@ -49,49 +50,21 @@ class Hub:
             route.append(stop.label)
         return miles, route
 
-    def add_truck(self, count=1):
+    def add_truck(self, count):
         """
-
+        Adds a number of new trucks to Hub according to the given count
         :param count:int
-        :return:Noe
+        :return:None
         """
         while count > 0:
             new_truck = Truck(count)
             self.trucks.append(new_truck)
             count -= 1
-
-    def load_all(self, truck):
-        """
-
-        :param truck:Truck
-        :return:None
-        """
-        truck.capacity = len(self.database.table)
-        for pkg in self.database.table:
-            if truck.not_full() is False:
-                break
-            if pkg.delivery_status != "At Hub":
-                continue
-            pkg.delivery_status = "In Route"
-            truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address))
-
-    def load_up_truck(self, truck):
-        """
-
-        :param truck:Truck
-        :return:None
-        """
-        for pkg in self.database.table:
-            if truck.not_full() is False:
-                break
-            if pkg.delivery_status != "At Hub":
-                continue
-            pkg.delivery_status = "In Route"
-            truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address))
+        self.trucks.reverse()
 
     def load_truck_2(self, truck):
         """
-
+        loads packages onto truck 2
         :param truck:Truck
         :return:None
         """
@@ -101,12 +74,12 @@ class Hub:
             if pkg.delivery_status != "At Hub":
                 continue
             if pkg.special_notes.endswith('Must', 0, 4) or pkg.special_notes.endswith('truck 2'):
-                pkg.delivery_status = "In Route"
-                truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address))
-                continue
-            if pkg.deadline == 24:
-                pkg.delivery_status = "In Route"
-                truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address))
+                if truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address)):
+                    pkg.delivery_status = "In Route"
+                    continue
+            if pkg.calculate_deadline(pkg.deadline) == 24:
+                if truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address)):
+                    pkg.delivery_status = "In Route"
 
     def load_packages(self):
         """
@@ -121,9 +94,9 @@ class Hub:
                     self.database.insert(row[0], row[1], row[4], row[5], row[6], row[7])
                 line_count += 1
 
-    def load_distances(self, distances):
+    def load_distances(self, distances: list):
         """
-
+        populates the distances or edge weights for the graph class destinations
         :param distances:List[[str, str]]
         :return:None
         """
@@ -145,11 +118,11 @@ class Hub:
         with open('WGUPS_Distance_Table.csv') as csv_file:
             csv_reader = csv.reader(csv_file)
             line_count = 0
-            distances = []
+            distances = list()
             self.destinations.add_location(self.center)
             distances.append(
-                ['0', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-                 '', '', '', '', '', '', '', ''])
+                ['0', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+                 '', '', '', '', '', '', '', '', '', '', ''])
             for row in csv_reader:
                 line_count += 1
                 if line_count < 4:
@@ -163,9 +136,64 @@ class Hub:
                 distances.append(row[2:-1])
             self.load_distances(distances)
 
+    def find_a_way(self, truck):
+        """
+        finds the shortest route along the stops from truck in O(N) time
+        :param truck: truck with stops to make
+        :return: the list of locations and the total distance traveled by the truck
+        """
+        stops = []
+        stops += list(truck.cargo.keys())
+        current = self.center  # start at the Hub
+        the_way = [current]
+        distance = 0.0
+        while stops:
+            result = self.nearest_neighbor(stops, current)
+            distance += result[1]
+            the_way.append(result[0])
+            current = stops.pop(0)
+            packages = truck.unload_package(current)
+            delivery_time = Package.calculate_delivery_time(distance, truck.speed, self.current_time)
+            for ID in packages:
+                pkg = self.database.look_up(ID)
+                pkg.delivery_status = "Delivered at " + delivery_time
+        distance += self.destinations.get_distance(the_way[-1], self.center)  # return to the Hub
+        truck.depart_at = Package.calculate_delivery_time(distance, truck.speed, self.current_time)
+        return the_way, distance
+
+    def nearest_neighbor(self, stops: [Location], current: Location):
+        """
+        Loop through stops and hold onto min value to find shortest distance
+        :param stops: list of points
+        :param current: current stop
+        :return: neighbor is the next closest stop and val is the distance to that stop
+        """
+        val = 140.0
+        neighbor = current
+        # loop through packages and hold onto min value to compare distances
+        for stop in stops:
+            dist = self.destinations.get_distance(current, stop)
+            if dist < val:
+                neighbor = stop
+                val = dist
+        return neighbor, val
+
+    # the following functions are only for testing purposes and not used in the main program
+    def load_all(self, truck):
+        """
+        test function that loads all of the packages onto 1 truck
+        :param truck:Truck
+        :return:None
+        """
+        truck.capacity = 41
+        for num in range(0, truck.capacity):
+            pkg = self.database.look_up(num)
+            pkg.delivery_status = "In Route"
+            truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address))
+
     def route_truck(self, truck):
         """
-
+        finds shortest route using Dijkstra's Shortest Paths
         :param truck:Truck
         :return:List[Location]
         """
@@ -176,7 +204,7 @@ class Hub:
 
     def dijkstra_shortest_path(self, start_point, stops):
         """
-
+        implementation of Dijkstra's Algorithm used only for testing purposes
         :param start_point:Location
         :param stops:List[Location]
         :return:None

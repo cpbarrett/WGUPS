@@ -55,7 +55,7 @@ class DistanceTable:
                 return location
         return None
 
-    def get_distance(self, from_point: Location, to_point: Location):
+    def get_distance(self, from_point: Location, to_point: Location) -> float:
         """
 
         :param from_point: Location
