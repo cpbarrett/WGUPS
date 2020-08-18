@@ -11,6 +11,7 @@ class DistanceTable:
     add_location: O(1)
     add_distance: O(1)
     get_location: O(N)
+    get_zip_code_matches: O(N^2)
     get_distance: O(1)
     print_table: O(N)
     """
@@ -55,12 +56,25 @@ class DistanceTable:
                 return location
         return None
 
+    def get_zip_code_matches(self, locations: list) -> list:
+        """
+        iterate over the locations in points and return all locations with same zip_code
+        :param locations: list of locations
+        :return: Locations with matching zip_codes
+        """
+        matches = []
+        for location in locations:
+            for point in self.points:
+                if location.zip_code == point.zip_code:
+                    matches.append(point)
+        return matches
+
     def get_distance(self, from_point: Location, to_point: Location) -> float:
         """
-
+        returns the distance between 2 points
         :param from_point: Location
         :param to_point: Location
-        :return: int
+        :return: float
         """
         if from_point is None or to_point is None:
             return 0

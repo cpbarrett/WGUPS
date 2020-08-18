@@ -9,6 +9,7 @@ class HashTable:
     """
     The Hashtable class has Big-O is as follows:
     Init: O(N)
+    Resize: O(N)
     Lookup: O(1)
     Insert: O(1)
     Update: O(1)
@@ -19,8 +20,19 @@ class HashTable:
         """
         table is initialized with empty values and small initial capacity
         """
-        self.dummy_pkg = Package(0, "", "", "EOD", 0, "")
-        self.table = [self.dummy_pkg] * table_size
+        self.dummy_pkg = Package(0, "", 0, "EOD", 0, "")
+        self.table_size = table_size
+        self.table = [self.dummy_pkg] * self.table_size
+        self.element_count = 0
+
+    def resize(self):
+        """
+        if the element count exceeds 80% of the hash table size, the hash table is doubled in size
+        :return: None
+        """
+        if self.element_count > len(self.table) * 0.8:
+            expansion = [self.dummy_pkg] * self.table_size
+            self.table.extend(expansion)
 
     def look_up(self, pkg_id: int):
         """
@@ -33,7 +45,7 @@ class HashTable:
             return None
         return self.table[index]
 
-    def insert(self, pkg_id: int, address: str, zip_code: str, dl: str, wt: int, notes: str):
+    def insert(self, pkg_id: int, address: str, zip_code: int, dl: str, wt: int, notes: str):
         """
         Creates a pkg object based on given information and inserts it into the table using pkg_id.
         :param pkg_id: id of the pkg
@@ -44,9 +56,11 @@ class HashTable:
         :param notes: misc. delivery instructions
         :return: None
         """
+        self.resize()
         index = int(pkg_id)
         new_pkg = Package(pkg_id, address, zip_code, dl, wt, notes)
         self.table[index] = new_pkg
+        self.element_count += 1
 
     def update(self, package):
         """

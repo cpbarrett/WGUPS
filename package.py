@@ -9,7 +9,7 @@ class Package:
     and special notes for delivery instructions
     """
 
-    def __init__(self, pkg_id: int, address: str, zip_code: str, dl: str, wt: int, notes: str):
+    def __init__(self, pkg_id: int, address: str, zip_code: int, dl: str, wt: int, notes: str):
         """
         :param pkg_id: unique id for each package
         :param address: address package is being delivered to
@@ -75,9 +75,10 @@ class Package:
         hour = int(delivery_time)
         minute = int(60 * (delivery_time - hour))
         am_pm = " AM"
-        if hour > 12:
-            hour -= 12
+        if hour >= 12:
             am_pm = " PM"
+            if hour > 12:
+                hour -= 12
         if minute < 10:
             minute = "0" + str(minute)
         time = str(hour) + ":" + str(minute) + am_pm

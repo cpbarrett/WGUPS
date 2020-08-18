@@ -13,6 +13,7 @@ class Truck:
         self.speed = 18.0
         self.capacity = capacity
         self.cargo = {}
+        self.pkg_count = 0
         self.depart_at = "08:00 AM"
 
     def load_package(self, pkg_id: int, delivery_location: Location) -> bool:
@@ -25,26 +26,29 @@ class Truck:
         if self.not_full() is False or delivery_location is None:
             return False
         if delivery_location not in self.cargo:
-            self.cargo[delivery_location] = list()
-        self.cargo[delivery_location].append(pkg_id)
+            self.cargo[delivery_location] = set()
+        self.cargo[delivery_location].add(pkg_id)
+        self.pkg_count += 1
         return True
 
-    def unload_package(self, delivery_location: Location):
+    def unload_package(self, delivery_location: Location) -> list:
         """
         If truck is not empty, remove the packages being delivered to this location from cargo.
         :param delivery_location: destination of the package
         :return: Packages being delivered
         """
         if len(self.cargo) > 0:
-            return self.cargo.pop(delivery_location)
-        return None
+            packages = self.cargo.pop(delivery_location)
+            self.pkg_count -= len(packages)
+            return packages
+        return []
 
     def not_full(self):
         """
         Return False if the truck cannot carry anymore packages.
         :return:bool
         """
-        if len(self.cargo.items()) < self.capacity:
+        if self.pkg_count < self.capacity:
             return True
         return False
 

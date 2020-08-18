@@ -14,11 +14,39 @@ def main():
     # sample_test()
     hub = Hub()
     # corrections for package 9
-    hub.database.look_up(9).correct_info("410 S State St", "84111", "corrected at 10:20 am")
+    pkg_9 = hub.database.look_up(9)
+    pkg_9.correct_info("410 S State St", "84111", "corrected at 10:20 AM")
+    hub.trucks[1].load_package(pkg_9.pkg_id, hub.destinations.get_location(pkg_9.address))
+    pkg_9.delivery_status = "In Route"
+    hub.trucks[1].depart_at = "10:20 AM"
+
+    # load truck 2
     hub.load_truck_2(hub.trucks[1])
+
+    # fill truck 3
+    hub.load_forced_group(hub.trucks[2])
+    hub.load_same_stop_truck(hub.trucks[2])
+    hub.load_zip_code_truck(hub.trucks[2])
+
+    # load truck 1
+    hub.load_delayed_truck(hub.trucks[0])
+    hub.load_early_truck(hub.trucks[0])
+    hub.load_same_stop_truck(hub.trucks[0])
+    hub.load_zip_code_truck(hub.trucks[0])
+
+    # fill truck 2
+    hub.load_delayed_truck(hub.trucks[1], False)
+    hub.load_same_stop_truck(hub.trucks[1])
+    hub.load_zip_code_truck(hub.trucks[1])
+    hub.load_any_truck_(hub.trucks[1])
+
+    # fill up last truck
+    hub.load_any_truck_(hub.trucks[2])
+
     info, miles = hub.get_miles()
-    print_results(info, miles)
-    # gui_menu(hub)
+    # print_results(info, miles)
+    # check_deliveries(hub)
+    gui_menu(hub, info, miles)
 
 
 def gui_menu(hub: Hub, info, miles):
@@ -35,17 +63,22 @@ def gui_menu(hub: Hub, info, miles):
         try:
             command = int(input("Command: "))
             if command == 1:
-                break
+                pkg_id = int(input("Enter a pkg id to lookup: "))
+                print(hub.database.look_up(pkg_id).__str__())
+                continue
             if command == 2:
                 given_time = input("Enter a time ie. 00:00 AM or press enter to continue: ")
                 if given_time == "":
                     check_deliveries(hub)
-                else:
-                    check_deliveries(hub, given_time)
+                    continue
+                check_deliveries(hub, given_time)
+                continue
             if command == 3:
                 print_results(info, miles)
-            else:
-                raise TypeError
+                continue
+            if command == 4:
+                break
+            raise TypeError
         except TypeError:
             print("Error please enter a number from 1-4.")
 
@@ -72,26 +105,27 @@ def print_results(info, miles):
     :return: None
     """
     print()
-    for i in range(len(info)):
-        print(info[i][0])
-        print(info[i][1])
-        print(info[i][2])
+    for _, j in enumerate(info):
+        print(j[0])
+        print(j[1])
+        print(j[2])
+        print()
     print('\n'f'The total distance traveled by all trucks is {sum(miles).__round__(2)}')
+    print()
 
 
-def check_deliveries(hub: Hub, given_time="11:59 PM"):
+def check_deliveries(hub: Hub, given_time="EOD"):
     """
     Returns a list of all delivered packages.
     :param hub: the depot
     :param given_time: specified time to check delivery status
     :return: None
     """
-    count = 0
     deliveries = hub.get_deliveries(given_time)
     for pkg in deliveries:
-        count += 1
         print(pkg.__str__())
-    print(f'Total Deliveries: {count}')
+    print()
+    print(f'Total Deliveries: {len(deliveries)}')
 
 
 def sample_test():

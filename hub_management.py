@@ -17,13 +17,13 @@ class Hub:
     The hub location is created manually for use elsewhere.
     """
 
-    def __init__(self, truck_count=2, opening_time="08:00 AM"):
+    def __init__(self, truck_count=3, opening_time="08:00 AM"):
         print("Welcome to Hub Management Center")
         self.current_time = opening_time
         self.truck_count = truck_count
         self.trucks = []
         self.add_truck(truck_count)
-        self.center = Location("Western Governors University", "4001 South 700 E", "84107", "HUB")
+        self.center = Location("Western Governors University", "4001 South 700 E", 84107, "HUB")
         self.destinations = distance_table.DistanceTable()
         self.database = HashTable()
         self.load_locations()
@@ -41,9 +41,9 @@ class Hub:
             count -= 1
         self.trucks.reverse()
 
-    def load_truck_2(self, truck):
+    def load_any_truck_(self, truck: Truck):
         """
-        loads packages onto truck 2
+        loads an available package
         :param truck:Truck
         :return:None
         """
@@ -52,17 +52,122 @@ class Hub:
                 break
             if pkg.delivery_status != "At Hub":
                 continue
-            if pkg.special_notes.endswith('Must', 0, 4) or pkg.special_notes.endswith('truck 2'):
+            if truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address)):
+                pkg.delivery_status = "In Route"
+
+    def load_forced_group(self, truck: Truck):
+        """
+        loads packages that must be delivered together
+        :param truck:Truck
+        :return:None
+        """
+        for pkg in self.database.table:
+            if truck.not_full() is False:
+                break
+            if pkg.delivery_status != "At Hub":
+                continue
+            if pkg.special_notes.endswith('Must', 0, 4):
                 if truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address)):
                     pkg.delivery_status = "In Route"
+                    group = pkg.special_notes.strip('Must be delivered with ').split(',')
+                    for pair in group:
+                        pkg_match = self.database.look_up(int(pair))
+                        destination = self.destinations.get_location(pkg_match.address)
+                        truck.load_package(int(pair), destination)
+                        pkg_match.delivery_status = "In Route"
+
+    def load_truck_2(self, truck: Truck):
+        """
+        loads packages that must be on truck 2
+        :param truck:Truck
+        :return:None
+        """
+        for pkg in self.database.table:
+            if truck.not_full() is False:
+                break
+            if pkg.delivery_status != "At Hub":
+                continue
+            if pkg.special_notes.endswith('truck 2'):
+                if truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address)):
+                    pkg.delivery_status = "In Route"
+
+    def load_same_stop_truck(self, truck: Truck):
+        """
+        loads packages with delivery addresses the truck is already going to
+        :param truck:Truck
+        :return:None
+        """
+        for pkg in self.database.table:
+            if truck.not_full() is False:
+                break
+            if pkg.delivery_status != "At Hub":
+                continue
+            pkg_location = self.destinations.get_location(pkg.address)
+            if pkg_location in truck.cargo.keys():
+                if truck.load_package(pkg.pkg_id, pkg_location):
+                    pkg.delivery_status = "In Route"
+
+    def load_zip_code_truck(self, truck: Truck):
+        """
+        loads packages with similar zip_codes onto truck
+        :param truck:Truck
+        :return:None
+        """
+        zip_code_locations = self.destinations.get_zip_code_matches(truck.cargo.keys())
+        for pkg in self.database.table:
+            if truck.not_full() is False:
+                break
+            if pkg.delivery_status != "At Hub":
+                continue
+            pkg_location = self.destinations.get_location(pkg.address)
+            if pkg_location in zip_code_locations:
+                if truck.load_package(pkg.pkg_id, pkg_location):
+                    pkg.delivery_status = "In Route"
+
+    def load_delayed_truck(self, truck: Truck, has_deadline=True):
+        """
+        Loads a truck with delayed packages
+        :param truck:
+        :param has_deadline:
+        :return:
+        """
+        for pkg in self.database.table:
+            if truck.not_full() is False:
+                break
+            if pkg.delivery_status != "At Hub":
+                continue
+            if has_deadline:
+                if pkg.deadline == "EOD":
                     continue
-            if pkg.calculate_deadline(pkg.deadline) == 24:
+            if pkg.special_notes.__contains__("Delayed"):
+                delay = pkg.special_notes[-8:]
+                later_time = pkg.calculate_deadline(delay)
+                depart_time = Package.calculate_deadline(truck.depart_at)
+                if later_time > depart_time:
+                    truck.depart_at = delay
+                if truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address)):
+                    pkg.delivery_status = "In Route"
+
+    def load_early_truck(self, truck: Truck):
+        """
+        Load truck with packages that have deadlines before 10:30 AM
+        :param truck:
+        :return:
+        """
+        for pkg in self.database.table:
+            if truck.not_full() is False:
+                break
+            if pkg.delivery_status != "At Hub":
+                continue
+            if len(pkg.special_notes) > 1:
+                continue
+            if pkg.calculate_deadline(pkg.deadline) <= 10.5:
                 if truck.load_package(pkg.pkg_id, self.destinations.get_location(pkg.address)):
                     pkg.delivery_status = "In Route"
 
     def load_packages(self):
         """
-
+        Loads all the packages into the database from csv file
         :return:None
         """
         with open('WGUPS_Package_File.csv') as csv_file:
@@ -70,7 +175,7 @@ class Hub:
             line_count = 0
             for row in csv_reader:
                 if line_count > 2:
-                    self.database.insert(row[0], row[1], row[4], row[5], row[6], row[7])
+                    self.database.insert(int(row[0]), row[1], int(row[4]), row[5], int(row[6]), row[7])
                 line_count += 1
 
     def load_distances(self, distances: list):
@@ -108,7 +213,7 @@ class Hub:
                     continue
                 address = row[0].split("\n")
                 label = row[1].split("\n")
-                zip_code = label[1].strip("(").strip(")")
+                zip_code = int(label[1].strip("(").strip(")"))
                 location = Location(
                     address[0], address[1], zip_code, label[0].strip(" "))
                 self.destinations.add_location(location)
@@ -121,8 +226,7 @@ class Hub:
         :param truck: truck with stops to make
         :return: the list of locations and the total distance traveled by the truck
         """
-        stops = []
-        stops += list(truck.cargo.keys())
+        stops = list(truck.cargo.keys())
         current = self.center  # start at the Hub
         the_way = [current]
         distance = 0.0
@@ -132,13 +236,13 @@ class Hub:
             the_way.append(result[0])
             current = stops.pop(0)
             packages = truck.unload_package(current)
-            delivery_time = Package.get_delivery_time(distance, truck.speed, self.current_time)
+            delivery_time = Package.get_delivery_time(distance, truck.speed, truck.depart_at)
             for pkg_id in packages:
                 pkg = self.database.look_up(pkg_id)
                 pkg.delivery_status = "Delivered"
                 pkg.delivery_time = delivery_time
         distance += self.destinations.get_distance(the_way[-1], self.center)  # return to the Hub
-        truck.depart_at = Package.get_delivery_time(distance, truck.speed, self.current_time)
+        truck.depart_at = Package.get_delivery_time(distance, truck.speed, truck.depart_at)
         return the_way, distance
 
     def nearest_neighbor(self, stops: [Location], current: Location):
@@ -158,7 +262,7 @@ class Hub:
                 val = dist
         return neighbor, val
 
-    def get_deliveries(self, current_time="11:59 PM"):
+    def get_deliveries(self, current_time="EOD"):
         """
         Returns a list of all delivered packages.
         :param current_time: what time is it
@@ -167,7 +271,7 @@ class Hub:
         deliveries = []
         for pkg in self.database.table:
             if pkg.delivery_status.__contains__("Delivered"):
-                if pkg.calculate_deadline(current_time) >= pkg.calculate_deadline(pkg.delivery_time):
+                if pkg.calculate_deadline(pkg.delivery_time) < pkg.calculate_deadline(current_time):
                     deliveries.append(pkg)
         return deliveries
 

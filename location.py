@@ -7,7 +7,7 @@ class Location:
     """
     Each location object has a name, address, zip_code, and label
     """
-    def __init__(self, name: str, address: str, zip_code: str, label: str):
+    def __init__(self, name: str, address: str, zip_code: int, label: str):
         self.name = name
         self.address = address + " Salt Lake City, UT"
         self.zip_code = zip_code
