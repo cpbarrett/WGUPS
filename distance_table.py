@@ -56,17 +56,17 @@ class DistanceTable:
                 return location
         return None
 
-    def get_zip_code_matches(self, locations: list) -> list:
+    def get_zip_code_matches(self, locations: list) -> set:
         """
         iterate over the locations in points and return all locations with same zip_code
         :param locations: list of locations
-        :return: Locations with matching zip_codes
+        :return: set of Locations with matching zip_codes
         """
-        matches = []
+        matches = set()
         for location in locations:
             for point in self.points:
                 if location.zip_code == point.zip_code:
-                    matches.append(point)
+                    matches.add(point)
         return matches
 
     def get_distance(self, from_point: Location, to_point: Location) -> float:
