@@ -31,7 +31,7 @@ class Hub:
 
     def add_truck(self, count):
         """
-        Adds a number of new trucks to Hub according to the given count
+        Adds a number of new trucks to Hub according to the given count.
         :param count:int
         :return:None
         """
@@ -43,7 +43,7 @@ class Hub:
 
     def load_any_truck_(self, truck: Truck):
         """
-        loads an available package
+        Loads the next available package from hash table onto the truck.
         :param truck:Truck
         :return:None
         """
@@ -57,7 +57,7 @@ class Hub:
 
     def load_forced_group(self, truck: Truck):
         """
-        loads packages that must be delivered together
+        Loads packages that must be delivered together.
         :param truck:Truck
         :return:None
         """
@@ -78,7 +78,7 @@ class Hub:
 
     def load_truck_2(self, truck: Truck):
         """
-        loads packages that must be on truck 2
+        Loads all packages that must be on truck 2.
         :param truck:Truck
         :return:None
         """
@@ -93,7 +93,7 @@ class Hub:
 
     def load_same_stop_truck(self, truck: Truck):
         """
-        loads packages with delivery addresses the truck is already going to
+        Loads packages with delivery addresses that the truck is already going to.
         :param truck:Truck
         :return:None
         """
@@ -109,7 +109,7 @@ class Hub:
 
     def load_zip_code_truck(self, truck: Truck):
         """
-        loads packages with similar zip_codes onto truck
+        Loads packages with similar zip_codes onto the given truck.
         :param truck:Truck
         :return:None
         """
@@ -150,7 +150,7 @@ class Hub:
 
     def load_early_truck(self, truck: Truck):
         """
-        Load truck with packages that have deadlines before 10:30 AM
+        Load truck with packages that have deadlines before 10:30 AM.
         :param truck:
         :return:
         """
@@ -167,7 +167,7 @@ class Hub:
 
     def load_packages(self):
         """
-        Loads all the packages into the database from csv file
+        Loads all the packages into the database (hash table) from the csv file.
         :return:None
         """
         with open('WGUPS_Package_File.csv') as csv_file:
@@ -180,7 +180,7 @@ class Hub:
 
     def load_distances(self, distances: list):
         """
-        populates the distances or edge weights for the graph class destinations
+        Populates the distances or edge weights for the graph class, destinations.
         :param distances:List[[str, str]]
         :return:None
         """
@@ -196,7 +196,7 @@ class Hub:
 
     def load_locations(self):
         """
-        Reads in the string data from the csv file loads each location as a point on a graph class
+        Reads in the string data from the csv file. Loads each location as a point in the graph class.
         :return:None
         """
         with open('WGUPS_Distance_Table.csv') as csv_file:
@@ -222,7 +222,7 @@ class Hub:
 
     def find_a_way(self, truck: Truck):
         """
-        finds the shortest route along the stops from truck in O(N) time
+        finds the shortest route along the stops from truck in O(N^2) time
         :param truck: truck with stops to make
         :return: the list of locations and the total distance traveled by the truck
         """
@@ -247,10 +247,10 @@ class Hub:
 
     def nearest_neighbor(self, stops: [Location], current: Location):
         """
-        Loop through stops and hold onto min value to find shortest distance
+        Loop through stops and hold onto min value to find shortest distance.
         :param stops: list of points
         :param current: current stop
-        :return: neighbor is the next closest stop and val is the distance to that stop
+        :return: Neighbor is the next closest stop and val is the distance to that stop.
         """
         val = 140.0
         neighbor = current
@@ -265,7 +265,7 @@ class Hub:
     def get_deliveries(self, current_time="EOD"):
         """
         Returns a list of all delivered packages.
-        :param current_time: what time is it
+        :param current_time: What time is it?
         :return: None
         """
         deliveries = []
@@ -295,6 +295,7 @@ class Hub:
     # the following functions are only for testing purposes and not used in the main program
     def truck_mileage(self, truck: Truck):
         """
+        Calculates the total round trip mileage driven by the truck.
         :param truck:Truck
         :return:int, List[Location]
         """
@@ -312,7 +313,7 @@ class Hub:
 
     def load_all(self, truck):
         """
-        test function that loads all of the packages onto 1 truck
+        Test function that loads all of the packages onto 1 truck.
         :param truck:Truck
         :return:None
         """
@@ -324,7 +325,7 @@ class Hub:
 
     def route_truck(self, truck):
         """
-        finds shortest route using Dijkstra's Shortest Paths
+        Finds shortest route using Dijkstra's Shortest Paths.
         :param truck:Truck
         :return:List[Location]
         """
@@ -335,7 +336,7 @@ class Hub:
 
     def dijkstra_shortest_path(self, start_point, stops):
         """
-        implementation of Dijkstra's Algorithm used only for testing purposes
+        Implementation of Dijkstra's Algorithm used only for testing purposes.
         :param start_point:Location
         :param stops:List[Location]
         :return:None
